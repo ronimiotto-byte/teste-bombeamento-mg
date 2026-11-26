@@ -1,0 +1,7 @@
+{
+  "appId": "br.com.mggeologia.testebombeamento",
+  "appName": "Teste de Bombeamento M&G",
+  "webDir": "www",
+  "android": { "allowMixedContent": false },
+  "plugins": { "LocalNotifications": { "iconColor": "#E8833A" } }
+}
