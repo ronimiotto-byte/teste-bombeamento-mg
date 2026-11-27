@@ -18,7 +18,8 @@ body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 "Source Sans 3
 .marca img{height:62px;width:auto}.mt{font:800 18px/1.1 Arial,sans-serif;letter-spacing:.18em}.ms{font:700 12.5px Arial,sans-serif;color:var(--lar);margin-top:3px}
 .marca .st{margin-left:auto;font-size:13px;color:#777;text-align:right}
 header.top{background:#000;color:#fff;padding:0 max(4vw,14px);position:sticky;top:0;z-index:5}
-.banda{display:block;width:100%;height:auto;margin-top:30px}
+.banda{display:block;position:fixed;left:0;right:0;bottom:0;width:100%;height:auto;margin:0;z-index:6;padding-bottom:env(safe-area-inset-bottom);background:#fff}
+body{padding-bottom:calc(100vw*120/1414 + 16px + env(safe-area-inset-bottom))}
 body{padding-top:env(safe-area-inset-top)}
 .relogio{border:2px solid #000;border-radius:12px;padding:16px;text-align:center;background:#fff}
 .relogio .k{font:700 14px Arial;color:var(--lar);letter-spacing:.08em;text-transform:uppercase}

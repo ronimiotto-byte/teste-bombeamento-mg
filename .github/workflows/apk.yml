@@ -27,6 +27,8 @@ jobs:
         run: python3 scripts/patch_android.py
       - name: Sincronizar
         run: npx cap sync android
+      - name: Chave fixa (permite atualizar o app por cima)
+        run: mkdir -p ~/.android && cp keystore/debug.keystore ~/.android/debug.keystore
       - name: Compilar
         working-directory: android
         run: chmod +x gradlew && ./gradlew assembleDebug --no-daemon

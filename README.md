@@ -18,3 +18,5 @@ App Android da M&G Geologia para o teste de bombeamento de poço tubular:
 4. Na primeira vez que iniciar o cronômetro, permita as notificações e "Alarmes e lembretes".
 
 Os testes ficam salvos só no celular.
+
+A partir da versão 1.4 todas as versões usam a mesma assinatura, então as próximas instalam por cima da anterior sem perder os projetos. Quem tem a 1.1 a 1.3 precisa desinstalar uma vez antes de instalar a 1.4.
