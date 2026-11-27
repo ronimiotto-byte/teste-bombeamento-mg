@@ -1051,17 +1051,26 @@ $('#cDecl').addEventListener('input',e=>{C.decl=e.target.value;agendarC();desenh
 /* ======================= estereograma (Schmidt, hemisfério inferior) ======================= */
 const COR_FEI={'Acamamento':'#2E6DB0','Fratura / junta':'#C0392B','Falha':'#7B1FA2','Foliação':'#2E7D32','Contato':'#E8833A','Veio / dique':'#795548','Derrame (topo/base)':'#00838F','Outro plano':'#555','Lineação':'#111','Estria de falha':'#7B1FA2','Eixo de dobra':'#2E7D32','Outra linha':'#555'};
 function medidasTodas(){return C.pontos.flatMap(p=>(p.medidas||[]).map(m=>({...m,ponto:p.nome})))}
-function desenharEstereo(c,lista){if(!c)return;const x=c.getContext('2d'),W=c.width,R=W*0.42,cx=W/2,cy=W/2;const L=lista||medidasTodas();
-  x.fillStyle='#fff';x.fillRect(0,0,W,c.height);x.strokeStyle='#222';x.lineWidth=W/300;x.beginPath();x.arc(cx,cy,R,0,7);x.stroke();
-  x.strokeStyle='#ccc';x.lineWidth=W/700;x.beginPath();x.moveTo(cx-R,cy);x.lineTo(cx+R,cy);x.moveTo(cx,cy-R);x.lineTo(cx,cy+R);x.stroke();
-  x.fillStyle='#222';x.font=`bold ${W/22}px Arial`;x.textAlign='center';x.fillText('N',cx,cy-R-W/40);
+function desenharEstereo(c,lista){if(!c)return;const x=c.getContext('2d'),W=c.width,R=W*0.40,cx=W/2,cy=W*0.47;const L=lista||medidasTodas();
+  x.fillStyle='#fff';x.fillRect(0,0,W,c.height);
   const P=(tr,pl)=>{const r=R*Math.SQRT2*Math.sin(rad(90-pl)/2);return [cx+r*Math.sin(rad(tr)),cy-r*Math.cos(rad(tr))]};
+  const curva=pts=>{x.beginPath();pts.forEach(([t,p],i)=>{const [a,b]=P(t,p);i?x.lineTo(a,b):x.moveTo(a,b)});x.stroke()};
+  // rede de Schmidt: grandes círculos (meridianos) e pequenos círculos (paralelos) de 10 em 10°
+  x.strokeStyle='#d6d6d6';x.lineWidth=W/900;
+  for(let d=10;d<90;d+=10)for(const dd of [90,270]){const s_=[0,1,0],dv=[Math.sin(rad(dd))*Math.cos(rad(d)),0,-Math.sin(rad(d))];const pts=[];for(let i=0;i<=90;i++){const a=rad(i*2);pts.push(Object.values(linha([s_[0]*Math.cos(a)+dv[0]*Math.sin(a),s_[1]*Math.cos(a)+dv[1]*Math.sin(a),s_[2]*Math.cos(a)+dv[2]*Math.sin(a)])))}curva(pts.map(o=>[o[0],o[1]]))}
+  for(let t=10;t<90;t+=10)for(const ax of [1,-1]){const pts=[];for(let i=0;i<=90;i++){const f=rad(i*2);const v=[Math.sin(rad(t))*Math.cos(f),ax*Math.cos(rad(t)),-Math.sin(rad(t))*Math.sin(f)];const o=linha(v);pts.push([o.tr,o.pl])}curva(pts)}
+  x.strokeStyle='#bdbdbd';x.beginPath();x.moveTo(cx-R,cy);x.lineTo(cx+R,cy);x.moveTo(cx,cy-R);x.lineTo(cx,cy+R);x.stroke();
+  // círculo primitivo, marcas de 10° e pontos cardeais
+  x.strokeStyle='#222';x.lineWidth=W/300;x.beginPath();x.arc(cx,cy,R,0,7);x.stroke();
+  for(let a=0;a<360;a+=10){const k=a%90===0?W/40:W/90;x.lineWidth=W/600;x.beginPath();x.moveTo(cx+R*Math.sin(rad(a)),cy-R*Math.cos(rad(a)));x.lineTo(cx+(R+k)*Math.sin(rad(a)),cy-(R+k)*Math.cos(rad(a)));x.stroke()}
+  x.fillStyle='#222';x.font=`bold ${W/24}px Arial`;x.textAlign='center';x.textBaseline='middle';[['N',0],['E',90],['S',180],['W',270]].forEach(([t,a])=>x.fillText(t,cx+(R+W/18)*Math.sin(rad(a)),cy-(R+W/18)*Math.cos(rad(a))));
+  x.beginPath();x.moveTo(cx-W/80,cy);x.lineTo(cx+W/80,cy);x.moveTo(cx,cy-W/80);x.lineTo(cx,cy+W/80);x.stroke();x.textBaseline='alphabetic';
   L.forEach(m=>{const cor=COR_FEI[m.feicao]||'#333';x.strokeStyle=cor;x.fillStyle=cor;
     if(m.tipo==='plano'){const dd=rad(m.dd),dp=rad(m.dip);const s=[Math.sin(dd-Math.PI/2),Math.cos(dd-Math.PI/2),0],dv=[Math.sin(dd)*Math.cos(dp),Math.cos(dd)*Math.cos(dp),-Math.sin(dp)];
-      x.lineWidth=W/350;x.beginPath();for(let i=0;i<=90;i++){const a=rad(i*2);const v=[s[0]*Math.cos(a)+dv[0]*Math.sin(a),s[1]*Math.cos(a)+dv[1]*Math.sin(a),s[2]*Math.cos(a)+dv[2]*Math.sin(a)];const o=linha(v);const [px,py]=P(o.tr,o.pl);i?x.lineTo(px,py):x.moveTo(px,py)}x.stroke();
-      const [px,py]=P(norm360(m.dd+180),90-m.dip);x.beginPath();x.arc(px,py,W/90,0,7);x.fill()}
+      x.lineWidth=W/260;x.beginPath();for(let i=0;i<=90;i++){const a=rad(i*2);const v=[s[0]*Math.cos(a)+dv[0]*Math.sin(a),s[1]*Math.cos(a)+dv[1]*Math.sin(a),s[2]*Math.cos(a)+dv[2]*Math.sin(a)];const o=linha(v);const [px,py]=P(o.tr,o.pl);i?x.lineTo(px,py):x.moveTo(px,py)}x.stroke();
+      const [px,py]=P(norm360(m.dd+180),90-m.dip);x.beginPath();x.arc(px,py,W/85,0,7);x.fill();x.lineWidth=W/500;x.strokeStyle='#fff';x.stroke()}
     else{const [px,py]=P(m.tr,m.pl);x.beginPath();x.moveTo(px,py-W/60);x.lineTo(px+W/70,py+W/110);x.lineTo(px-W/70,py+W/110);x.closePath();x.fill()}});
-  const fe=[...new Set(L.map(m=>m.feicao))];x.textAlign='left';x.font=`${W/34}px Arial`;fe.forEach((f,i)=>{x.fillStyle=COR_FEI[f]||'#333';x.fillRect(W*0.03,c.height-W*0.04*(fe.length-i)-W*0.02,W*0.025,W*0.025);x.fillStyle='#222';x.fillText(f,W*0.07,c.height-W*0.04*(fe.length-i)-W*0.0)});
+  const fe=[...new Set(L.map(m=>m.feicao))];x.textAlign='left';x.font=`${W/34}px Arial`;fe.forEach((f,i)=>{const col_=i%2,lin=Math.floor(i/2);const lx=W*0.05+col_*W*0.47,ly=cy+R+W*0.1+lin*W*0.045;x.fillStyle=COR_FEI[f]||'#333';x.fillRect(lx,ly-W*0.022,W*0.025,W*0.025);x.fillStyle='#222';x.fillText(f,lx+W*0.04,ly)});x.font=`${W/40}px Arial`;x.fillStyle='#555';x.fillText('Planos: grandes círculos e polos (●) · Linhas: ▲',W*0.05,c.height-W*0.055);
   x.fillStyle="#666";x.textAlign="right";x.fillText(`${L.length} medida(s) · Schmidt, hemisfério inferior`,W*0.97,c.height-W*0.02)}
 
 // início
