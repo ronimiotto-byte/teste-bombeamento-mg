@@ -176,4 +176,3 @@ function modo(m){document.body.dataset.modo=m;try{localStorage.setItem('mg-modo'
   else{(document.querySelector('nav.tabs button[aria-selected=true]')||document.querySelector('nav.tabs button[data-p=dados]')).click()}
   window.scrollTo(0,0)}
 document.querySelectorAll('[data-modo]').forEach(b=>b.onclick=()=>modo(b.dataset.modo));
-$('#bPerfilPng').onclick=()=>baixar(perfilPng,'.png','Perfil_'+limpa(S.nome||S.meta.rodape||S.meta.usuario||'poco')+'.png');
