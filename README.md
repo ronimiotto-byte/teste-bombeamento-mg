@@ -8,7 +8,10 @@ App Android da M&G Geologia para o teste de bombeamento de poço tubular:
 - opção de manter a tela ligada durante o teste;
 - lançamento das leituras (N.D., Q e N.A.) direto no cronômetro;
 - dados do poço, coordenada pelo GPS do celular convertida para UTM SIRGAS 2000;
-- memorial de cálculo (vazão de estabilização ou Cooper-Jacob com t₀) em Word e PDF, no layout M&G.
+- memorial de cálculo (vazão de estabilização ou Cooper-Jacob com t₀) em Word e PDF, no layout M&G;
+- coordenada do GPS só trava quando a precisão fica em 3 m ou menos por 3 leituras seguidas (ou quando você manda usar a melhor);
+- perfil geológico-construtivo montado no celular (litologia, perfuração, revestimento, vedação, entradas d'água), com desenho e imagem PNG;
+- modo Campo, separado dos poços: levantamentos com pontos, descrição e fotos com carimbo (data, coordenada, UTM, altitude, precisão e azimute), exportados em .zip com uma pasta por ponto, pontos.csv e pontos.kml.
 
 ## Instalar no celular
 

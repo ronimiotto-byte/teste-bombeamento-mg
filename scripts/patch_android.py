@@ -2,10 +2,11 @@
 p='android/app/src/main/AndroidManifest.xml'
 s=open(p).read()
 perms=['android.permission.ACCESS_FINE_LOCATION','android.permission.ACCESS_COARSE_LOCATION','android.permission.POST_NOTIFICATIONS',
-       'android.permission.USE_EXACT_ALARM','android.permission.RECEIVE_BOOT_COMPLETED','android.permission.WAKE_LOCK','android.permission.VIBRATE']
+       'android.permission.USE_EXACT_ALARM','android.permission.RECEIVE_BOOT_COMPLETED','android.permission.WAKE_LOCK','android.permission.VIBRATE','android.permission.CAMERA']
 add=''.join(f'\n    <uses-permission android:name="{x}" />' for x in perms if x not in s)
 add+='\n    <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" android:maxSdkVersion="32" />' if 'SCHEDULE_EXACT_ALARM' not in s else ''
-add+='\n    <uses-feature android:name="android.hardware.location.gps" android:required="false" />'
+add+='\n    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" android:maxSdkVersion="29" />' if 'WRITE_EXTERNAL_STORAGE' not in s else ''
+add+='\n    <uses-feature android:name="android.hardware.location.gps" android:required="false" />\n    <uses-feature android:name="android.hardware.camera" android:required="false" />'
 s=s.replace('</manifest>',add+'\n</manifest>')
 open(p,'w').write(s); print(s[-900:])
 
