@@ -11,7 +11,8 @@ App Android da M&G Geologia para o teste de bombeamento de poço tubular:
 - memorial de cálculo (vazão de estabilização ou Cooper-Jacob com t₀) em Word e PDF, no layout M&G;
 - coordenada do GPS só trava quando a precisão fica em 3 m ou menos por 3 leituras seguidas (ou quando você manda usar a melhor);
 - dados do perfil geológico-construtivo lançados no celular (litologia, perfuração, revestimento, filtros, encamisamento, espaço anelar, entradas d'água, saliência, laje, tubo edutor, bomba, tubo de inspeção e dispositivos), com conferência; o desenho é gerado no programa do computador;
-- modo Campo, separado dos poços: levantamentos com pontos, descrição e fotos com carimbo (data, coordenada, UTM, altitude, precisão e azimute), exportados em .zip com uma pasta por ponto, pontos.csv e pontos.kml.
+- modo Campo, separado dos poços: levantamentos com pontos, descrição e fotos com carimbo (data, coordenada, UTM, altitude, precisão e azimute), exportados em .zip com uma pasta por ponto, pontos.csv e pontos.kml;
+- medidas estruturais no Campo (planos em direção do mergulho/mergulho e linhas em sentido/caimento), com trava automática quando o celular fica parado, trava por toque ou temporizador, lançamento à mão, correção de declinação, estereograma e medidas_estruturais.csv.
 
 ## Instalar no celular
 

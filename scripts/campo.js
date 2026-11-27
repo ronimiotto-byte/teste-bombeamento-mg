@@ -101,17 +101,21 @@ function renderCampo(){const P=C.pontos;
    <div class="pc"><input class="pn" data-pn="${i}" value="${esc(p.nome)}" aria-label="Nome do ponto"><span class="note">${p.fotos.length} foto(s)</span><button class="x" data-pdel="${i}" aria-label="Excluir ponto">×</button></div>
    <label class="f">Descrição<textarea rows="3" data-pd="${i}" placeholder="O que é o ponto, observações de campo…">${esc(p.desc)}</textarea></label>
    <p class="note pco">${p.fix?('📍 '+esc(txtFix(p.fix))+(p.fix.daFoto?' (da 1ª foto)':'')):'Sem coordenada'}</p>
-   <div class="row"><button class="btn" data-pgps="${i}">Pegar coordenada</button><button class="btn pri" data-pcam="${i}">📷 Foto com carimbo</button><label class="btn">Da galeria<input type="file" accept="image/*" multiple hidden data-pgal="${i}"></label></div>
+   <div class="row"><button class="btn" data-pgps="${i}">Pegar coordenada</button><button class="btn pri" data-pcam="${i}">📷 Foto com carimbo</button><label class="btn">Da galeria<input type="file" accept="image/*" multiple hidden data-pgal="${i}"></label><button class="btn dk" data-pest="${i}">📐 Medida estrutural</button></div>
+   ${(p.medidas||[]).length?`<ul class="meds">${p.medidas.map((m,k)=>`<li><b>${m.tipo==='plano'?`${String(m.dd).padStart(3,'0')}/${String(m.dip).padStart(2,'0')}`:`${String(m.tr).padStart(3,'0')}→${String(m.pl).padStart(2,'0')}`}</b> <span>${esc(m.feicao)}${m.obs?' · '+esc(m.obs):''}</span><button class="x" data-mdel="${i}.${k}" aria-label="Excluir medida">×</button></li>`).join('')}</ul>`:''}
    <div class="thumbs">${p.fotos.map((f,k)=>`<figure><img data-fid="${f.id}" alt="Foto ${k+1}"><input data-fl="${i}.${k}" value="${esc(f.leg)}" placeholder="legenda"><button class="x" data-fdel="${i}.${k}" aria-label="Excluir foto">×</button></figure>`).join('')}</div></div>`).join(''):'<p class="note">Nenhum ponto ainda. Toque em “Novo ponto”.</p>';
+  desenharEstereo($('#cEst'));$('#cEstW').style.display=medidasTodas().length?'':'none';
   document.querySelectorAll('img[data-fid]').forEach(async im=>{const id=im.dataset.fid;if(!URLS[id]){const b=await IDB.get(id);if(b)URLS[id]=URL.createObjectURL(b)}if(URLS[id])im.src=URLS[id]})}
 $('#pNovoP').onclick=()=>{const n=C.pontos.length+1;C.pontos.push({id:'p'+Date.now().toString(36),nome:'P'+pad2(n),desc:'',fix:null,fotos:[]});agendarC();renderCampo();
   setTimeout(()=>{const l=document.querySelectorAll('.ponto');l[l.length-1].scrollIntoView({behavior:'smooth'})},50)};
 document.addEventListener('input',e=>{const t=e.target;const P=C.pontos;
   if(t.dataset.pn!=null)P[+t.dataset.pn].nome=t.value;else if(t.dataset.pd!=null)P[+t.dataset.pd].desc=t.value;
   else if(t.dataset.fl!=null){const [i,k]=t.dataset.fl.split('.').map(Number);P[i].fotos[k].leg=t.value}else return;agendarC()});
-document.addEventListener('click',async e=>{const t=e.target.closest('[data-pgps],[data-pcam],[data-pdel],[data-fdel]');if(!t)return;const P=C.pontos;
+document.addEventListener('click',async e=>{const t=e.target.closest('[data-pgps],[data-pcam],[data-pdel],[data-fdel],[data-pest],[data-mdel]');if(!t)return;const P=C.pontos;
   if(t.dataset.pgps!=null){const i=+t.dataset.pgps;const f=await travarGPS('Coordenada de '+P[i].nome);if(f){P[i].fix={lat:f.lat,lon:f.lon,alt:f.alt,acc:f.acc,t:Date.now()};agendarC();renderCampo()}}
   else if(t.dataset.pcam!=null)abrirCamera(+t.dataset.pcam);
+  else if(t.dataset.pest!=null)abrirEst(+t.dataset.pest);
+  else if(t.dataset.mdel!=null){const [i,k]=t.dataset.mdel.split('.').map(Number);if(!confirm('Excluir esta medida?'))return;P[i].medidas.splice(k,1);agendarC();renderCampo()}
   else if(t.dataset.fdel!=null){const [i,k]=t.dataset.fdel.split('.').map(Number);const f=P[i].fotos[k];if(!confirm('Excluir esta foto?'))return;P[i].fotos.splice(k,1);try{await IDB.del(f.id)}catch(x){}agendarC();renderCampo()}
   else if(t.dataset.pdel!=null){const i=+t.dataset.pdel;if(!confirm(`Excluir o ponto ${P[i].nome} e as ${P[i].fotos.length} foto(s)?`))return;for(const f of P[i].fotos){try{await IDB.del(f.id)}catch(x){}}P.splice(i,1);agendarC();renderCampo()}});
 
@@ -123,6 +127,8 @@ function txtPonto(p,nomeP){const L=[`PONTO: ${p.nome}`,`Projeto: ${C.nome||'Camp
     `Altitude (GPS): ${p.fix.alt!=null?br(p.fix.alt,1)+' m':'não informada'}`,`Precisão horizontal: ±${br(p.fix.acc,1)} m`+(p.fix.daFoto?' (coordenada da 1ª foto)':''),`Data da coordenada: ${dataHora(p.fix.t)}`)}else L.push('Sem coordenada');
   L.push('','DESCRIÇÃO:',p.desc||'(sem descrição)','','FOTOS:');
   p.fotos.forEach((f,k)=>{L.push(`${nomeP}_foto${pad2(k+1)}.jpg — ${dataHora(f.t)}`+(f.fix?` — ${br(f.fix.lat,6)}, ${br(f.fix.lon,6)} ±${br(f.fix.acc,1)} m`+(f.fix.alt!=null?`, alt. ${br(f.fix.alt,0)} m`:''):'')+(f.az!=null?` — azimute ${f.az}° ${rumo(f.az)}`:'')+(f.origem==='galeria'?' — da galeria':'')+(f.leg?` — ${f.leg}`:''))});
+  if((p.medidas||[]).length){L.push('','MEDIDAS ESTRUTURAIS'+(p.medidas.some(m=>m.decl)?` (corrigidas para o norte verdadeiro, declinação ${br(p.medidas[0].decl,1)}°)`:' (norte magnético)')+':');
+    p.medidas.forEach(m=>L.push((m.tipo==='plano'?`${m.feicao}: ${String(m.dd).padStart(3,'0')}/${String(m.dip).padStart(2,'0')} (direção do mergulho/mergulho; strike ${String(m.strike).padStart(3,'0')})`:`${m.feicao}: ${String(m.tr).padStart(3,'0')}→${String(m.pl).padStart(2,'0')} (sentido/caimento)`)+` — ${dataHora(m.t)}`+(m.obs?` — ${m.obs}`:'')))}
   return L.join('\r\n')}
 async function montarCampo(){const P=C.pontos;if(!P.length)throw new Error('Não há pontos neste projeto.');
   const raiz=limpa(C.nome||'Campo');const arqs=[];
@@ -135,6 +141,10 @@ async function montarCampo(){const P=C.pontos;if(!P.length)throw new Error('Não
     csv.push([p.nome,'"'+String(p.desc||'').replace(/"/g,'""').replace(/\r?\n/g,' ')+'"',p.fix?brn(p.fix.lat,7):'',p.fix?brn(p.fix.lon,7):'',u?brn(u.E,2):'',u?brn(u.N,2):'',u?u.zona+u.banda:'',p.fix?brn(p.fix.alt,1):'',p.fix?brn(p.fix.acc,1):'',p.fotos.length].join(';'));
     if(p.fix)kml.push(`<Placemark><name>${esc(p.nome)}</name><description>${esc(p.desc||'')}</description><Point><coordinates>${p.fix.lon},${p.fix.lat},${p.fix.alt||0}</coordinates></Point></Placemark>`)}
   kml.push('</Document></kml>');
+  const md=['ponto;tipo;feicao;dir_mergulho;mergulho;strike_rhr;sentido;caimento;declinacao;latitude;longitude;data;dispersao_graus;observacao'];
+  P.forEach(p=>(p.medidas||[]).forEach(m=>{const f=m.fix||p.fix;md.push([p.nome,m.tipo,m.feicao,m.dd??'',m.dip??'',m.strike??'',m.tr??'',m.pl??'',brn(m.decl,1),f?brn(f.lat,7):'',f?brn(f.lon,7):'',dataHora(m.t),brn(m.disp,1),'"'+String(m.obs||'').replace(/"/g,'""')+'"'].join(';'))}));
+  if(md.length>1){arqs.push([`${raiz}/medidas_estruturais.csv`,new Blob(['\ufeff'+md.join('\r\n')],{type:'text/csv'})]);
+    const ce=document.createElement('canvas');ce.width=1600;ce.height=1700;desenharEstereo(ce);arqs.push([`${raiz}/estereograma.png`,await new Promise(r=>ce.toBlob(r,'image/png'))])}
   arqs.push([`${raiz}/pontos.csv`,new Blob(['﻿'+csv.join('\r\n')],{type:'text/csv'})],[`${raiz}/pontos.kml`,new Blob([kml.join('\n')],{type:'application/vnd.google-earth.kml+xml'})]);
   return {raiz,arqs}}
 const b64de=b=>new Promise(r=>{const fr=new FileReader();fr.onload=()=>r(String(fr.result).split(',')[1]);fr.readAsDataURL(b)});
@@ -154,7 +164,7 @@ function lcSet(o){try{localStorage.setItem(LSC,JSON.stringify(o))}catch(e){statu
 let timerC=null;
 function agendarC(){status('alterado');clearTimeout(timerC);timerC=setTimeout(salvarC,800)}
 function salvarC(){C.alterado=Date.now();const a=lcGet();a[C.id]=C;a.__ultimo=C.id;lcSet(a);status('salvo')}
-function abrirC(o){C=Object.assign(novoC(),o);$('#cNome').value=C.nome||'';renderCampo()}
+function abrirC(o){C=Object.assign(novoC(),o);$('#cNome').value=C.nome||'';$('#cDecl').value=C.decl||'';renderCampo()}
 $('#cNome').addEventListener('input',e=>{C.nome=e.target.value;agendarC()});
 $('#cSalvar').onclick=()=>{salvarC();const b=$('#cSalvar');b.textContent='Salvo ✓';setTimeout(()=>b.textContent='Salvar',1500)};
 $('#cAbrir').onclick=()=>{const a=lcGet();const L=Object.keys(a).filter(k=>k!=='__ultimo').map(k=>a[k]).sort((p,q)=>(q.alterado||0)-(p.alterado||0));
@@ -167,7 +177,7 @@ $('#cAbrir').onclick=()=>{const a=lcGet();const L=Object.keys(a).filter(k=>k!=='
   $('#dlg').showModal()};
 $('#cNovo').onclick=()=>{salvarC();abrirC(novoC());status('levantamento novo');$('#cNome').focus()};
 let C=novoC();
-(()=>{const a=lcGet();if(a.__ultimo&&a[a.__ultimo])C=Object.assign(novoC(),a[a.__ultimo]);$('#cNome').value=C.nome||''})();
+(()=>{const a=lcGet();if(a.__ultimo&&a[a.__ultimo])C=Object.assign(novoC(),a[a.__ultimo]);$('#cNome').value=C.nome||'';$('#cDecl').value=C.decl||''})();
 
 /* ======================= modo Poço / Campo ======================= */
 function modo(m){document.body.dataset.modo=m;try{localStorage.setItem('mg-modo',m)}catch(e){}
