@@ -8,3 +8,20 @@ add+='\n    <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALA
 add+='\n    <uses-feature android:name="android.hardware.location.gps" android:required="false" />'
 s=s.replace('</manifest>',add+'\n</manifest>')
 open(p,'w').write(s); print(s[-900:])
+
+# assinatura fixa: o mesmo certificado em todas as versoes (permite instalar por cima)
+g='android/app/build.gradle'
+b=open(g).read()
+if 'keystore/debug.keystore' not in b:
+    bloco='''android {
+    signingConfigs {
+        debug {
+            storeFile file("${rootDir}/../keystore/debug.keystore")
+            storePassword 'android'
+            keyAlias 'androiddebugkey'
+            keyPassword 'android'
+        }
+    }'''
+    b=b.replace('android {',bloco,1)
+    open(g,'w').write(b)
+print('gradle ok')
