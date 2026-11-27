@@ -211,7 +211,7 @@ dialog::backdrop{background:rgba(0,0,0,.5)}
     <div class="k">Vazão ótima</div><div class="v" id="vQot">–</div>
     <dl class="kv" id="kv"></dl>
    </div>
-   <div class="row"><button class="btn pri" id="bDoc">Baixar Word</button><button class="btn dk" id="bPdf">Baixar PDF</button></div>
+   <div class="row"><button class="btn pri" id="bDoc">Baixar Word</button><button class="btn dk" id="bPdf">Baixar PDF</button><button class="btn" id="bJson">Enviar para o computador</button></div>
    <p class="note" id="nDoc">Memorial no layout M&amp;G: dados do ensaio, planilha, gráficos semilog e cálculos.</p>
   </div>
  </div>
@@ -596,7 +596,7 @@ async function baixar(fn,ext){const n=$('#nDoc');try{n.textContent='Gerando…';
     await P.Share.share({title:nomeArq(ext),url:w.uri,dialogTitle:'Salvar ou enviar o memorial'});n.textContent='Arquivo gerado: '+nomeArq(ext)}
   else{const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=nomeArq(ext);a.click();n.textContent='Arquivo gerado: '+nomeArq(ext)}}
   catch(e){n.textContent='Não foi possível gerar: '+(e&&e.message||e)}}
-$('#bDoc').onclick=()=>baixar(montarDocx,'.docx');$('#bPdf').onclick=()=>baixar(montarPdf,'.pdf');
+$('#bDoc').onclick=()=>baixar(montarDocx,'.docx');$('#bJson').onclick=()=>baixar(async()=>new Blob([JSON.stringify({app:'teste-bombeamento-mg',projeto:Object.assign({},S,{nome:$('#pNome').value||S.meta.usuario||''})})],{type:'application/json'}),'.json');$('#bPdf').onclick=()=>baixar(montarPdf,'.pdf');
 $('#bGps').onclick=async()=>{const n=$('#nGps');const G=window.Capacitor&&Capacitor.isNativePlatform&&Capacitor.isNativePlatform()?Capacitor.Plugins.Geolocation:null;
   if(G){try{n.textContent='Buscando localização…';await G.requestPermissions();const p=await G.getCurrentPosition({enableHighAccuracy:true,timeout:30000});const u=utm(p.coords.latitude,p.coords.longitude);S.meta.coord=u.txt;$('#coord').value=u.txt;n.textContent=`Precisão ±${Math.round(p.coords.accuracy)} m · ${p.coords.latitude.toFixed(6)}, ${p.coords.longitude.toFixed(6)}`;agendar()}catch(e){n.textContent='Não foi possível obter a localização: '+(e.message||e)}return}
   if(!navigator.geolocation){n.textContent='Este aparelho não oferece localização aqui.';return}
